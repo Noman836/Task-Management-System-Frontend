@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { format } from 'date-fns';
 import taskService from '../services/taskService';
 import { useToast } from '../contexts/ToastContext';
-import { validateTaskData, getFieldError } from '../utils/validation';
+import { validateTaskData } from '../utils/validation';
 
 const TaskForm = ({ onTaskAdded }) => {
   const [formData, setFormData] = useState({

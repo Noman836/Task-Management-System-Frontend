@@ -9,7 +9,7 @@ const TaskList = ({ tasks, loading, error, onTaskUpdated, onTaskDeleted, onRefre
   const [editFormData, setEditFormData] = useState({});
   const [editFieldErrors, setEditFieldErrors] = useState({});
   const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'completed'
-  const { showSuccess, showError, showWarning } = useToast();
+  const { showSuccess, showError } = useToast();
 
   const handleEdit = (task) => {
     setEditingTask(task.id);

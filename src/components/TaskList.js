@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { format, isPast, isToday } from 'date-fns';
 import taskService from '../services/taskService';
+import { useToast } from '../contexts/ToastContext';
+import { validateTaskData } from '../utils/validation';
 
 const TaskList = ({ tasks, loading, error, onTaskUpdated, onTaskDeleted, onRefresh }) => {
   const [editingTask, setEditingTask] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [editFieldErrors, setEditFieldErrors] = useState({});
   const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'completed'
+  const { showSuccess, showError, showWarning } = useToast();
 
   const handleEdit = (task) => {
     setEditingTask(task.id);
@@ -33,23 +37,44 @@ const TaskList = ({ tasks, loading, error, onTaskUpdated, onTaskDeleted, onRefre
 
   const handleUpdate = async (taskId) => {
     try {
+      // Frontend validation for edit
+      const validationErrors = validateTaskData(editFormData, true);
+      if (validationErrors.length > 0) {
+        const errors = {};
+        validationErrors.forEach(error => {
+          if (error.toLowerCase().includes('title')) errors.title = error;
+          if (error.toLowerCase().includes('due date')) errors.due_date = error;
+          if (error.toLowerCase().includes('priority')) errors.priority = error;
+          if (error.toLowerCase().includes('description')) errors.description = error;
+        });
+        setEditFieldErrors(errors);
+        return;
+      }
+
       const updatedTask = await taskService.updateTask(taskId, editFormData);
       onTaskUpdated(updatedTask);
+      showSuccess('Task updated successfully!');
       setEditingTask(null);
       setEditFormData({});
+      setEditFieldErrors({});
     } catch (err) {
-      alert(err.message);
+      showError(err.message);
     }
   };
 
   const handleDelete = async (taskId) => {
+    try {
+      await taskService.deleteTask(taskId);
+      onTaskDeleted(taskId);
+      showSuccess('Task deleted successfully!');
+    } catch (err) {
+      showError(err.message);
+    }
+  };
+
+  const handleDeleteClick = (taskId) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
-      try {
-        await taskService.deleteTask(taskId);
-        onTaskDeleted(taskId);
-      } catch (err) {
-        alert(err.message);
-      }
+      handleDelete(taskId);
     }
   };
 
@@ -57,8 +82,9 @@ const TaskList = ({ tasks, loading, error, onTaskUpdated, onTaskDeleted, onRefre
     try {
       const updatedTask = await taskService.toggleTaskCompletion(task.id, { completed: !task.completed });
       onTaskUpdated(updatedTask);
+      showSuccess(`Task marked as ${!task.completed ? 'completed' : 'incomplete'}!`);
     } catch (err) {
-      alert(err.message);
+      showError(err.message);
     }
   };
 
@@ -248,38 +274,69 @@ const TaskList = ({ tasks, loading, error, onTaskUpdated, onTaskDeleted, onRefre
           >
             {editingTask === task.id ? (
               <div className="space-y-3">
+                {Object.keys(editFieldErrors).length > 0 && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                    {Object.values(editFieldErrors).map((error, index) => (
+                      <p key={index} className="text-red-600 text-sm">{error}</p>
+                    ))}
+                  </div>
+                )}
                 <input
                   type="text"
                   name="title"
                   value={editFormData.title}
                   onChange={handleEditChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                    editFieldErrors.title ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
+                {editFieldErrors.title && (
+                  <p className="text-xs text-red-600">{editFieldErrors.title}</p>
+                )}
                 <textarea
                   name="description"
                   value={editFormData.description}
                   onChange={handleEditChange}
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                    editFieldErrors.description ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
+                {editFieldErrors.description && (
+                  <p className="text-xs text-red-600">{editFieldErrors.description}</p>
+                )}
                 <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="date"
-                    name="due_date"
-                    value={editFormData.due_date}
-                    onChange={handleEditChange}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                  <select
-                    name="priority"
-                    value={editFormData.priority}
-                    onChange={handleEditChange}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                  </select>
+                  <div>
+                    <input
+                      type="date"
+                      name="due_date"
+                      value={editFormData.due_date}
+                      onChange={handleEditChange}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                        editFieldErrors.due_date ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {editFieldErrors.due_date && (
+                      <p className="text-xs text-red-600">{editFieldErrors.due_date}</p>
+                    )}
+                  </div>
+                  <div>
+                    <select
+                      name="priority"
+                      value={editFormData.priority}
+                      onChange={handleEditChange}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                        editFieldErrors.priority ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                    </select>
+                    {editFieldErrors.priority && (
+                      <p className="text-xs text-red-600">{editFieldErrors.priority}</p>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="flex items-center space-x-2">
@@ -359,7 +416,7 @@ const TaskList = ({ tasks, loading, error, onTaskUpdated, onTaskDeleted, onRefre
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(task.id)}
+                      onClick={() => handleDeleteClick(task.id)}
                       className="text-red-600 hover:text-red-700 text-sm font-medium"
                     >
                       Delete

@@ -12,10 +12,8 @@ export const validateTaskData = (data, isUpdate = false) => {
       errors.push('Title must be less than 255 characters');
     }
     // Check for invalid characters (allow letters, numbers, spaces, and basic punctuation)
-    if (!/^[a-zA-Z0-9\s\-_.,!?()[\]{}:;'"\/\\@#$%&*+=<>~`]+$/.test(trimmedTitle)) {
- {
+    if (!/^[a-zA-Z0-9\s\-_.,!?()[\]{}:;'"\\@#$%&*+=<>~`]+$/.test(trimmedTitle))
       errors.push('Title contains invalid characters');
-    }
   }
 
   // Due date validation
@@ -106,7 +104,7 @@ export const validateTaskData = (data, isUpdate = false) => {
 
   return errors;
 };
-}
+
 export const getFieldError = (errors, fieldName) => {
   const fieldErrors = {
     title: errors.filter(error => 

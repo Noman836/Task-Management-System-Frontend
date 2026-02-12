@@ -13,6 +13,7 @@ export const validateTaskData = (data, isUpdate = false) => {
     }
     // Check for invalid characters (allow letters, numbers, spaces, and basic punctuation)
     if (!/^[a-zA-Z0-9\s\-_.,!?()[\]{}:;'"\/\\@#$%&*+=<>~`]+$/.test(trimmedTitle)) {
+ {
       errors.push('Title contains invalid characters');
     }
   }
@@ -105,7 +106,7 @@ export const validateTaskData = (data, isUpdate = false) => {
 
   return errors;
 };
-
+}
 export const getFieldError = (errors, fieldName) => {
   const fieldErrors = {
     title: errors.filter(error => 
@@ -126,4 +127,4 @@ export const getFieldError = (errors, fieldName) => {
   };
 
   return fieldErrors[fieldName] || [];
-};
+}

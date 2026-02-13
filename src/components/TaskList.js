@@ -204,64 +204,68 @@ const TaskList = ({ tasks, loading, error, onTaskUpdated, onTaskDeleted, onRefre
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">Tasks ({filteredTasks.length})</h2>
-          <div className="flex items-center gap-4 mt-2 text-sm">
-            <span className="text-gray-500">
-              Total: <span className="font-medium text-gray-700">{taskStats.total}</span>
-            </span>
-            <span className="text-blue-600">
-              Active: <span className="font-medium">{taskStats.active}</span>
-            </span>
-            <span className="text-green-600">
-              Completed: <span className="font-medium">{taskStats.completed}</span>
-            </span>
+    <div className="bg-white rounded-lg shadow-md pl-6 pr-6 pb-6 h-[515px] overflow-y-auto">
+      {/* Sticky Header Section */}
+      <div className="sticky top-0 bg-white p-3 z-10 pb-4 border-b border-gray-200 mb-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Tasks ({filteredTasks.length})</h2>
+            <div className="flex items-center gap-4 mt-2 text-sm">
+              <span className="text-gray-500">
+                Total: <span className="font-medium text-gray-700">{taskStats.total}</span>
+              </span>
+              <span className="text-blue-600">
+                Active: <span className="font-medium">{taskStats.active}</span>
+              </span>
+              <span className="text-green-600">
+                Completed: <span className="font-medium">{taskStats.completed}</span>
+              </span>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setFilterStatus('all')}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  filterStatus === 'all' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilterStatus('active')}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  filterStatus === 'active' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Active
+              </button>
+              <button
+                onClick={() => setFilterStatus('completed')}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  filterStatus === 'completed' 
+                    ? 'bg-white text-gray-900 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Completed
+              </button>
+            </div>
             <button
-              onClick={() => setFilterStatus('all')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                filterStatus === 'all' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              onClick={onRefresh}
+              className="text-primary-600 hover:text-primary-700 text-sm font-medium"
             >
-              All
-            </button>
-            <button
-              onClick={() => setFilterStatus('active')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                filterStatus === 'active' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Active
-            </button>
-            <button
-              onClick={() => setFilterStatus('completed')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                filterStatus === 'completed' 
-                  ? 'bg-white text-gray-900 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Completed
+              Refresh
             </button>
           </div>
-          <button
-            onClick={onRefresh}
-            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-          >
-            Refresh
-          </button>
         </div>
       </div>
 
+      {/* Scrollable Tasks Section */}
       <div className="space-y-4">
         {filteredTasks.map((task) => (
           <div
